@@ -1,59 +1,69 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Minus, Plus, Camera, ImageIcon, Check, AlertCircle } from "lucide-react"
-import type { MatchData, Player } from "@/app/page"
+import { useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Minus,
+  Plus,
+  Camera,
+  ImageIcon,
+  Check,
+  AlertCircle,
+} from "lucide-react";
+import type { MatchData, Player } from "@/app/page";
 
 type Props = {
-  matchData: MatchData
-  updateMatchData: (updates: Partial<MatchData>) => void
-  onGenerateCard: () => void
-}
+  matchData: MatchData;
+  updateMatchData: (updates: Partial<MatchData>) => void;
+  onGenerateCard: () => void;
+};
 
 export function PostMatchScreen({
   matchData,
   updateMatchData,
   onGenerateCard,
 }: Props) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const totalPlayerGoals = matchData.players.reduce((sum, p) => sum + p.goals, 0)
-  const goalsToAssign = matchData.homeScore - totalPlayerGoals
+  const totalPlayerGoals = matchData.players.reduce(
+    (sum, p) => sum + p.goals,
+    0,
+  );
+  const goalsToAssign = matchData.homeScore - totalPlayerGoals;
 
   const updateScore = (team: "home" | "away", delta: number) => {
     if (team === "home") {
       updateMatchData({
         homeScore: Math.max(0, matchData.homeScore + delta),
-      })
+      });
     } else {
       updateMatchData({
         awayScore: Math.max(0, matchData.awayScore + delta),
-      })
+      });
     }
-  }
+  };
 
-  const updatePlayerGoals = (playerId: number, delta: number) => {
+  const updatePlayerGoals = (playerId: string, delta: number) => {
     const newPlayers = matchData.players.map((p) =>
-      p.id === playerId ? { ...p, goals: Math.max(0, p.goals + delta) } : p
-    )
-    updateMatchData({ players: newPlayers })
-  }
+      p.id === playerId ? { ...p, goals: Math.max(0, p.goals + delta) } : p,
+    );
+    updateMatchData({ players: newPlayers });
+  };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        updateMatchData({ matchPhoto: reader.result as string })
-      }
-      reader.readAsDataURL(file)
+        updateMatchData({ matchPhoto: reader.result as string });
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
@@ -145,7 +155,8 @@ export function PostMatchScreen({
             ) : (
               <>
                 <AlertCircle className="size-3 mr-1" />
-                残り{Math.abs(goalsToAssign)}ゴール{goalsToAssign < 0 ? "超過" : ""}
+                残り{Math.abs(goalsToAssign)}ゴール
+                {goalsToAssign < 0 ? "超過" : ""}
               </>
             )}
           </Badge>
@@ -213,7 +224,7 @@ export function PostMatchScreen({
         結果カードを作成
       </Button>
     </div>
-  )
+  );
 }
 
 function PlayerCard({
@@ -221,9 +232,9 @@ function PlayerCard({
   onIncrement,
   onDecrement,
 }: {
-  player: Player
-  onIncrement: () => void
-  onDecrement: () => void
+  player: Player;
+  onIncrement: () => void;
+  onDecrement: () => void;
 }) {
   return (
     <div
@@ -251,13 +262,13 @@ function PlayerCard({
           variant="ghost"
           className="size-8 shrink-0"
           onClick={(e) => {
-            e.stopPropagation()
-            onDecrement()
+            e.stopPropagation();
+            onDecrement();
           }}
         >
           <Minus className="size-4" />
         </Button>
       )}
     </div>
-  )
+  );
 }

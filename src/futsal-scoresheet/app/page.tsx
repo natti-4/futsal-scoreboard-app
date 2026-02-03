@@ -47,7 +47,7 @@ import {
 
 export type Player = {
   totalGoals: number;
-  id: string | number;
+  id: string;
   name: string;
   number: number;
   goals: number;
