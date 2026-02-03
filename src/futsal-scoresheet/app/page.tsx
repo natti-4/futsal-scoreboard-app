@@ -46,6 +46,7 @@ import {
 } from "@/hooks/use-futsal-data";
 
 export type Player = {
+  totalGoals: number;
   id: string | number;
   name: string;
   number: number;
@@ -152,7 +153,13 @@ export default function FutsalScoreboard() {
         ...prev,
         players: dbPlayers
           .filter((p) => p.is_active)
-          .map((p) => ({ id: p.id, name: p.name, number: p.number, goals: 0 })),
+          .map((p) => ({
+            id: p.id,
+            name: p.name,
+            number: p.number,
+            goals: 0,
+            totalGoals: p.total_goals,
+          })),
       }));
     }
   }, [dbPlayers, isInMatch]);
@@ -185,7 +192,13 @@ export default function FutsalScoreboard() {
       }),
       players: dbPlayers
         .filter((p) => p.is_active)
-        .map((p) => ({ id: p.id, name: p.name, number: p.number, goals: 0 })),
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          number: p.number,
+          goals: 0,
+          totalGoals: p.total_goals,
+        })),
       events: [],
       matchPhoto: null,
     }));
@@ -209,7 +222,13 @@ export default function FutsalScoreboard() {
       }),
       players: dbPlayers
         .filter((p) => p.is_active)
-        .map((p) => ({ id: p.id, name: p.name, number: p.number, goals: 0 })),
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          number: p.number,
+          goals: 0,
+          totalGoals: p.total_goals,
+        })),
       events: [],
       matchPhoto: null,
     });
