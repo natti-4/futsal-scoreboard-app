@@ -30,10 +30,35 @@ export function ResultPreview({
     try {
       // html2canvasで画像を生成（handleDownloadと同じ処理）
       const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(cardRef.current, {
+      const html2canvasOptions = {
         backgroundColor: null,
         scale: 2,
-      });
+        onclone: (clonedDoc: Document, clonedNode: Element) => {
+          const el = clonedNode as HTMLElement;
+          const fixUnsupportedColors = (node: HTMLElement) => {
+            const computed = clonedDoc.defaultView?.getComputedStyle(node);
+            if (computed) {
+              const bg = computed.backgroundColor;
+              const color = computed.color;
+              if (bg && (bg.includes("lab(") || bg.includes("oklch("))) {
+                node.style.backgroundColor = "transparent";
+              }
+              if (
+                color &&
+                (color.includes("lab(") || color.includes("oklch("))
+              ) {
+                node.style.color = "#ffffff";
+              }
+            }
+            node
+              .querySelectorAll("*")
+              .forEach((child) => fixUnsupportedColors(child as HTMLElement));
+          };
+          fixUnsupportedColors(el);
+        },
+      };
+
+      const canvas = await html2canvas(cardRef.current, html2canvasOptions);
       // CanvasをBlobに変換
       canvas.toBlob(async (blob) => {
         if (!blob) {
@@ -87,16 +112,42 @@ export function ResultPreview({
 
     try {
       const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(cardRef.current, {
+      const html2canvasOptions = {
         backgroundColor: null,
         scale: 2,
-      });
+        onclone: (clonedDoc: Document, clonedNode: Element) => {
+          const el = clonedNode as HTMLElement;
+          const fixUnsupportedColors = (node: HTMLElement) => {
+            const computed = clonedDoc.defaultView?.getComputedStyle(node);
+            if (computed) {
+              const bg = computed.backgroundColor;
+              const color = computed.color;
+              if (bg && (bg.includes("lab(") || bg.includes("oklch("))) {
+                node.style.backgroundColor = "transparent";
+              }
+              if (
+                color &&
+                (color.includes("lab(") || color.includes("oklch("))
+              ) {
+                node.style.color = "#ffffff";
+              }
+            }
+            node
+              .querySelectorAll("*")
+              .forEach((child) => fixUnsupportedColors(child as HTMLElement));
+          };
+          fixUnsupportedColors(el);
+        },
+      };
+
+      const canvas = await html2canvas(cardRef.current, html2canvasOptions);
 
       const link = document.createElement("a");
       link.download = `match-result-${Date.now()}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
-    } catch {
+    } catch (error) {
+      console.error("Download error:", error);
       // html2canvas not available or failed
       alert("Download feature requires html2canvas library");
     }
