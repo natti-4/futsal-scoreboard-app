@@ -115,28 +115,33 @@ export function ResultPreview({
       const html2canvasOptions = {
         backgroundColor: null,
         scale: 2,
-        onclone: (clonedDoc: Document, clonedNode: Element) => {
-          const el = clonedNode as HTMLElement;
-          const fixUnsupportedColors = (node: HTMLElement) => {
-            const computed = clonedDoc.defaultView?.getComputedStyle(node);
-            if (computed) {
-              const bg = computed.backgroundColor;
-              const color = computed.color;
-              if (bg && (bg.includes("lab(") || bg.includes("oklch("))) {
-                node.style.backgroundColor = "transparent";
-              }
-              if (
-                color &&
-                (color.includes("lab(") || color.includes("oklch("))
-              ) {
-                node.style.color = "#ffffff";
-              }
+        onclone: (_clonedDoc: Document, clonedNode: Element) => {
+          const original = cardRef.current;
+          if (!original) return;
+
+          const fixUnsupportedColors = (
+            orig: HTMLElement,
+            clone: HTMLElement,
+          ) => {
+            const computed = window.getComputedStyle(orig); // 元ドキュメントを使用
+            const bg = computed.backgroundColor;
+            const color = computed.color;
+            if (bg && (bg.includes("lab(") || bg.includes("oklch("))) {
+              clone.style.backgroundColor = "transparent";
             }
-            node
-              .querySelectorAll("*")
-              .forEach((child) => fixUnsupportedColors(child as HTMLElement));
+            if (color && (color.includes("lab(") || color.includes("oklch("))) {
+              clone.style.color = "#ffffff";
+            }
+            const origChildren = Array.from(orig.children);
+            const cloneChildren = Array.from(clone.children);
+            for (let i = 0; i < origChildren.length; i++) {
+              fixUnsupportedColors(
+                origChildren[i] as HTMLElement,
+                cloneChildren[i] as HTMLElement,
+              );
+            }
           };
-          fixUnsupportedColors(el);
+          fixUnsupportedColors(original, clonedNode as HTMLElement);
         },
       };
 
