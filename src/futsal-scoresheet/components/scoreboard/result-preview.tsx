@@ -26,15 +26,59 @@ export function ResultPreview({
     .join(", ");
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${matchData.homeTeam} vs ${matchData.awayTeam}`,
-          text: `${matchData.homeTeam} ${matchData.homeScore} - ${matchData.awayScore} ${matchData.awayTeam}\n${scorers ? `Scorers: ${scorers}` : ""}`,
-        });
-      } catch {
-        // User cancelled or share failed
-      }
+    if (!cardRef.current) return;
+    try {
+      // html2canvasで画像を生成（handleDownloadと同じ処理）
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: null,
+        scale: 2,
+      });
+      // CanvasをBlobに変換
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          alert("画像の生成に失敗しました");
+          return;
+        }
+
+        // Fileオブジェクトを作成
+        const file = new File(
+          [blob],
+          `match-result-${matchData.homeTeam}-vs-${matchData.awayTeam}.png`,
+          { type: "image/png" },
+        );
+
+        // Web Share API Level 2（files対応）をチェック
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            // 画像ファイルをシェアパネルに渡す
+            await navigator.share({
+              files: [file],
+              title: `${matchData.homeTeam} vs ${matchData.awayTeam}`,
+              text: `${matchData.homeTeam} ${matchData.homeScore} - ${matchData.awayScore} ${matchData.awayTeam}`,
+            });
+          } catch (err) {
+            // ユーザーがキャンセルした場合は何もしない
+            if ((err as Error).name !== "AbortError") {
+              console.error("Share failed:", err);
+            }
+          }
+        } else {
+          // files共有非対応（PCブラウザなど）→ ダウンロードにフォールバック
+          const link = document.createElement("a");
+          link.download = `match-result-${Date.now()}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+
+          // ユーザーに手動でInstagramにアップロードするよう案内
+          alert(
+            "画像をダウンロードしました。Instagramアプリから手動でアップロードしてください。",
+          );
+        }
+      }, "image/png");
+    } catch (error) {
+      console.error("Share error:", error);
+      alert("画像の共有に失敗しました");
     }
   };
 
