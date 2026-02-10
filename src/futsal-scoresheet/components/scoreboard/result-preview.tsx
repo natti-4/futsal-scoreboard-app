@@ -29,36 +29,11 @@ export function ResultPreview({
     if (!cardRef.current) return;
     try {
       // html2canvasで画像を生成（handleDownloadと同じ処理）
-      const html2canvas = (await import("html2canvas")).default;
-      const html2canvasOptions = {
+      const html2canvas = (await import("html2canvas-pro")).default;
+      const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
         scale: 2,
-        onclone: (clonedDoc: Document, clonedNode: Element) => {
-          const el = clonedNode as HTMLElement;
-          const fixUnsupportedColors = (node: HTMLElement) => {
-            const computed = clonedDoc.defaultView?.getComputedStyle(node);
-            if (computed) {
-              const bg = computed.backgroundColor;
-              const color = computed.color;
-              if (bg && (bg.includes("lab(") || bg.includes("oklch("))) {
-                node.style.backgroundColor = "transparent";
-              }
-              if (
-                color &&
-                (color.includes("lab(") || color.includes("oklch("))
-              ) {
-                node.style.color = "#ffffff";
-              }
-            }
-            node
-              .querySelectorAll("*")
-              .forEach((child) => fixUnsupportedColors(child as HTMLElement));
-          };
-          fixUnsupportedColors(el);
-        },
-      };
-
-      const canvas = await html2canvas(cardRef.current, html2canvasOptions);
+      });
       // CanvasをBlobに変換
       canvas.toBlob(async (blob) => {
         if (!blob) {
@@ -109,52 +84,21 @@ export function ResultPreview({
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
-
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const html2canvasOptions = {
+      // ★ ライブラリ名だけ html2canvas-pro に変更
+      const html2canvas = (await import("html2canvas-pro")).default;
+      const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
         scale: 2,
-        onclone: (_clonedDoc: Document, clonedNode: Element) => {
-          const original = cardRef.current;
-          if (!original) return;
-
-          const fixUnsupportedColors = (
-            orig: HTMLElement,
-            clone: HTMLElement,
-          ) => {
-            const computed = window.getComputedStyle(orig); // 元ドキュメントを使用
-            const bg = computed.backgroundColor;
-            const color = computed.color;
-            if (bg && (bg.includes("lab(") || bg.includes("oklch("))) {
-              clone.style.backgroundColor = "transparent";
-            }
-            if (color && (color.includes("lab(") || color.includes("oklch("))) {
-              clone.style.color = "#ffffff";
-            }
-            const origChildren = Array.from(orig.children);
-            const cloneChildren = Array.from(clone.children);
-            for (let i = 0; i < origChildren.length; i++) {
-              fixUnsupportedColors(
-                origChildren[i] as HTMLElement,
-                cloneChildren[i] as HTMLElement,
-              );
-            }
-          };
-          fixUnsupportedColors(original, clonedNode as HTMLElement);
-        },
-      };
-
-      const canvas = await html2canvas(cardRef.current, html2canvasOptions);
+      });
 
       const link = document.createElement("a");
       link.download = `match-result-${Date.now()}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
-    } catch (error) {
-      console.error("Download error:", error);
-      // html2canvas not available or failed
-      alert("Download feature requires html2canvas library");
+    } catch (err) {
+      console.error("Download error:", err);
+      alert("画像の生成に失敗しました");
     }
   };
 
