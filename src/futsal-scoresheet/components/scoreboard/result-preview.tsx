@@ -27,6 +27,12 @@ export function ResultPreview({
 
   const handleShare = async () => {
     if (!cardRef.current) return;
+    if (!navigator.share) {
+      alert(
+        "このブラウザは共有機能に対応していません。Safari か、画像をダウンロードしてからSNSにアップロードしてください。",
+      );
+      return;
+    }
     try {
       // html2canvasで画像を生成（handleDownloadと同じ処理）
       const html2canvas = (await import("html2canvas-pro")).default;
