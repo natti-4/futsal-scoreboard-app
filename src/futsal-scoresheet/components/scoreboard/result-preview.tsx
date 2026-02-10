@@ -29,7 +29,7 @@ export function ResultPreview({
     if (!cardRef.current) return;
     if (!navigator.share) {
       alert(
-        "このブラウザは共有機能に対応していません。Safari か、画像をダウンロードしてからSNSにアップロードしてください。",
+        "このブラウザは共有機能に対応していません。他のブラウザか、画像をダウンロードしてからSNSにアップロードしてください。",
       );
       return;
     }
